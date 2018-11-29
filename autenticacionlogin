@@ -1,0 +1,45 @@
+
+    protected void Login1_Authenticate(object sender, AuthenticateEventArgs e)
+    {
+        using (SqlConnection cn = new SqlConnection(ConfigurationManager.ConnectionStrings["examen"].ToString()))
+        {
+            cn.Open();
+            SqlCommand cmd = new SqlCommand();
+            cmd.CommandText = "spAcceso";
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Connection = cn;
+            cmd.Parameters.AddWithValue("@usuario", Login1.UserName);
+            cmd.Parameters.AddWithValue("@contrasena", Login1.Password);
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    Session["Username"] = reader.GetValue(0);
+                    Session["tipo"] = reader.GetValue(1);
+                    Session["idAlumno"] = reader.GetValue(2);
+                    Session["idMaestro"] = reader.GetValue(3);
+                    Session["NoExamen"] = "1";
+                }
+                e.Authenticated = true;
+            }
+            else 
+            {
+                e.Authenticated = false;
+                Response.Redirect("login.aspx");
+            }
+        }
+    }
+    protected void Login1_LoggedIn(object sender, EventArgs e)
+    {
+        int tipo = Convert.ToInt32(Session["tipo"].ToString());
+        if (tipo <= 2)
+        {
+            Response.Redirect("./Default.aspx");
+        }
+        else
+        {
+            Session["tiempo"] = 120;
+            Response.Redirect("./pruebas/Default.aspx");
+        }
+    }
